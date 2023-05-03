@@ -33,8 +33,13 @@ const getFilteredProducts = (userId, query) => (
 export const App = () => {
   const [selectedUser, setSelectedUser] = useState(0);
   const [query, setQuery] = useState('');
+  const [selectedCategorie, setSelectedCategorie] = useState(0);
 
   const visibleProducts = getFilteredProducts(selectedUser, query);
+
+  const categoriesNames = [...new Set(
+    categoriesFromServer.map(categorie => categorie.title),
+  )];
 
   const handleReset = () => {
     setSelectedUser(0);
@@ -110,36 +115,24 @@ export const App = () => {
                 All
               </a>
 
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1 is-info"
-                href="#/"
-              >
-                Category 1
-              </a>
+              {categoriesNames.map((name) => {
+                const categorie = categoriesFromServer
+                  .find(category => category.title === name);
 
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1"
-                href="#/"
-              >
-                Category 2
-              </a>
-
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1 is-info"
-                href="#/"
-              >
-                Category 3
-              </a>
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1"
-                href="#/"
-              >
-                Category 4
-              </a>
+                return (
+                  <a
+                    data-cy="Category"
+                    className={selectedCategorie
+                      ? 'button mr-2 my-1 is-info'
+                      : 'button mr-2 my-1'}
+                    href="#/"
+                    key={categorie.id}
+                    onClick={() => setSelectedCategorie(categorie.id)}
+                  >
+                    {name}
+                  </a>
+                );
+              })}
             </div>
 
             <div className="panel-block">
