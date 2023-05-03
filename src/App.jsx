@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
-import React from 'react';
+import React, { useState } from 'react';
 import './App.scss';
 
 import usersFromServer from './api/users';
@@ -19,9 +19,14 @@ const products = productsFromServer.map((product) => {
   };
 });
 
+const getFilteredProducts = userId => (
+  products.filter(product => (userId ? product.user.id === userId : product))
+);
+
 export const App = () => {
-  // eslint-disable-next-line no-console
-  console.log(products);
+  const [selectedUser, setSelectedUser] = useState(0);
+
+  const visibleProducts = getFilteredProducts(selectedUser);
 
   return (
     <div className="section">
@@ -36,31 +41,21 @@ export const App = () => {
               <a
                 data-cy="FilterAllUsers"
                 href="#/"
+                onClick={() => setSelectedUser(0)}
               >
                 All
               </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 1
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-                className="is-active"
-              >
-                User 2
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 3
-              </a>
+              {usersFromServer.map(user => (
+                <a
+                  className={selectedUser === user.id ? 'is-active' : ''}
+                  data-cy="FilterUser"
+                  href="#/"
+                  key={user.id}
+                  onClick={() => setSelectedUser(user.id)}
+                >
+                  {user.name}
+                </a>
+              ))}
             </p>
 
             <div className="panel-block">
@@ -203,11 +198,11 @@ export const App = () => {
             </thead>
 
             <tbody>
-              {products.map((product) => {
+              {visibleProducts.map((product) => {
                 const { user, category, id, name } = product;
 
                 return (
-                  <tr data-cy="Product">
+                  <tr data-cy="Product" key={id}>
                     <td className="has-text-weight-bold" data-cy="ProductId">
                       {id}
                     </td>
