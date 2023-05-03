@@ -19,23 +19,37 @@ const products = productsFromServer.map((product) => {
   };
 });
 
-const getFilteredProducts = (userId, query) => (
-  products
-    .filter(product => (userId ? product.user.id === userId : product))
-    .filter((product) => {
-      const productLowerCase = product.name.toLowerCase();
-      const queryToLowerCase = query.toLowerCase();
+const getFilteredProducts = (userId, query, selectedCategorie) => (
+  selectedCategorie.length > 0
+    ? products
+      .filter(product => (userId ? product.user.id === userId : product))
+      .filter((product) => {
+        const productLowerCase = product.name.toLowerCase();
+        const queryToLowerCase = query.toLowerCase();
 
-      return productLowerCase.includes(queryToLowerCase);
-    })
+        return productLowerCase.includes(queryToLowerCase);
+      })
+      .filter(product => selectedCategorie.includes(product.category.title))
+    : products
+      .filter(product => (userId ? product.user.id === userId : product))
+      .filter((product) => {
+        const productLowerCase = product.name.toLowerCase();
+        const queryToLowerCase = query.toLowerCase();
+
+        return productLowerCase.includes(queryToLowerCase);
+      })
 );
 
 export const App = () => {
   const [selectedUser, setSelectedUser] = useState(0);
   const [query, setQuery] = useState('');
-  const [selectedCategorie, setSelectedCategorie] = useState(0);
+  const [selectedCategorie, setSelectedCategorie] = useState([]);
 
-  const visibleProducts = getFilteredProducts(selectedUser, query);
+  const visibleProducts = getFilteredProducts(
+    selectedUser,
+    query,
+    selectedCategorie,
+  );
 
   const categoriesNames = [...new Set(
     categoriesFromServer.map(categorie => categorie.title),
@@ -44,6 +58,7 @@ export const App = () => {
   const handleReset = () => {
     setSelectedUser(0);
     setQuery('');
+    setSelectedCategorie([]);
   };
 
   return (
@@ -57,6 +72,7 @@ export const App = () => {
 
             <p className="panel-tabs has-text-weight-bold">
               <a
+                className={selectedUser === 0 ? 'is-active' : ''}
                 data-cy="FilterAllUsers"
                 href="#/"
                 onClick={() => setSelectedUser(0)}
@@ -110,29 +126,30 @@ export const App = () => {
               <a
                 href="#/"
                 data-cy="AllCategories"
-                className="button is-success mr-6 is-outlined"
+                className={selectedCategorie.length > 0
+                  ? 'button is-success mr-6 is-outlined'
+                  : 'button is-success mr-6'}
+                onClick={() => setSelectedCategorie([])}
               >
                 All
               </a>
 
-              {categoriesNames.map((name) => {
-                const categorie = categoriesFromServer
-                  .find(category => category.title === name);
-
-                return (
-                  <a
-                    data-cy="Category"
-                    className={selectedCategorie
-                      ? 'button mr-2 my-1 is-info'
-                      : 'button mr-2 my-1'}
-                    href="#/"
-                    key={categorie.id}
-                    onClick={() => setSelectedCategorie(categorie.id)}
-                  >
-                    {name}
-                  </a>
-                );
-              })}
+              {categoriesNames.map(categoryName => (
+                <a
+                  data-cy="Category"
+                  className={selectedCategorie.includes(categoryName)
+                    ? 'button mr-2 my-1 is-info'
+                    : 'button mr-2 my-1'}
+                  href="#/"
+                  key={categoryName}
+                  onClick={() => setSelectedCategorie(currentCategorie => ([
+                    ...currentCategorie,
+                    categoryName,
+                  ]))}
+                >
+                  {categoryName}
+                </a>
+              ))}
             </div>
 
             <div className="panel-block">
